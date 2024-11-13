@@ -1,4 +1,4 @@
-# Sui Move Event Ticketing System
+# decentralized-event-ticketing-system
 
 A decentralized event ticketing platform built on the Sui blockchain that enables secure ticket creation, sales, transfers, and validation with features like dynamic pricing, NFT benefits, and promotional codes.
 
