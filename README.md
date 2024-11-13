@@ -1,100 +1,182 @@
-# Stim Games Platform: Module Documentation
+# Sui Move Event Ticketing System
 
-## Overview
+A decentralized event ticketing platform built on the Sui blockchain that enables secure ticket creation, sales, transfers, and validation with features like dynamic pricing, NFT benefits, and promotional codes.
 
-This module, `stim_games::stim_games`, establishes a decentralized game store, enabling publishers to sell game licenses and users to buy, store, and view their purchased licenses. Additional features like promo codes, fee management, and a licensing verification mechanism are built in, providing a comprehensive structure for managing a blockchain-based game store.
+## Features
 
-### Components
+### Core Functionality
 
-#### Struct Definitions
+- Event creation and management by verified organizers
+- Multiple ticket types with customizable benefits
+- Secure ticket purchases with SUI tokens
+- QR code generation for ticket validation
+- Ticket transfers and resale capabilities
+- Venue section management with custom pricing
 
-1. **Platform**: Represents the game platform, with attributes for owner, fee percentage, and accumulated revenue.
+### Advanced Features
 
-2. **GameStore**: A container for games and promotional codes, with features for owner management.
+- Dynamic pricing based on time and demand
+- Promotional code support
+- NFT-based benefits and priority access
+- Attendee profiles with loyalty points
+- Platform revenue sharing model
+- Comprehensive transfer history tracking
 
-3. **Game**: Contains details of a game, including name, publisher, price, revenue, and a list of issued licenses.
+## Getting Started
 
-4. **UserAccount**: Manages user-specific information such as balance and owned licenses.
+### Prerequisites
 
-5. **License**: Represents ownership of a purchased game, with details like purchase date and gifting information.
+- Sui CLI installed
+- Sui wallet configured
+- Basic understanding of Move programming
 
-6. **Discount**: Details for promotional codes, including discount rate, expiry, and usage tracking.
+### Installation
 
-#### Error Codes
+1. Clone the repository:
 
-- **ENotOwner (0)**: Triggered when an action is attempted by a non-owner.
-- **EGameNotFound (1)**: Raised if a game is not found in the store.
-- **EUserNotFound (2)**: Raised when a user account is not found.
-- **EInsufficientFunds (3)**: Raised if the user lacks enough funds to purchase a license.
-- **EGameAlreadyExists (4)**: Raised when trying to add a game that already exists.
-- **EGameSoldOut (5)**: Raised when a game reaches its maximum licenses.
-- **EInvalidPromoCode (6)**: Raised if a promo code is invalid or expired.
+```bash
+git clone https://github.com/alia-chela/decentralized-event-ticketing-system.git
+cd decentralized-event-ticketing-system
+```
 
----
+2.  Run the test network locally:
 
-### Functions
+```bash
+RUST_LOG="off,sui_node=info" sui-test-validator
+```
 
-#### Platform and Store Management
+3. Build the project:
 
-- **initialize_platform**: Initializes the platform with a set fee percentage for transactions. Only the platform owner can use this.
-  
-- **create_store**: Creates a game store for managing games and promotional codes. The sender of the transaction becomes the store owner.
+```bash
+sui move build
+```
 
-#### User Account Management
+4. Deploy to the Sui network:
 
-- **create_user_account**: Sets up a new user account for purchasing licenses.
+```bash
+sui client publish --gas-budget 30000
+```
 
-#### Game Management
+## Usage
 
-- **add_game**: Allows store owners to add new games, specifying name, price, description, and optional max licenses.
+### Platform Initialization
 
-- **add_promo_code**: Enables store owners to add promotional codes with defined discounts and usage restrictions.
+The platform is automatically initialized upon deployment with:
 
-#### License Purchase and Payment
+- Platform admin assignment
+- Default fee percentage (2.5%)
+- Organizer registry setup
 
-- **purchase_license**: Manages the purchase of a game license, including promo code application, fund deduction, platform fees, and license issuance. Licenses are only issued if sufficient funds are available, and the game is not sold out.
+### Register as an Organizer
 
-#### User Interaction
+```move
+register_organizer(platform, name, ctx)
+```
 
-- **view_user_licenses**: Lists all licenses owned by the user.
+### Create an Event
 
-- **view_license**: Provides details of a specific license owned by the user.
+```move
+create_event(
+    platform,
+    name,
+    description,
+    venue,
+    start_time,
+    end_time,
+    max_capacity,
+    ctx
+)
+```
 
-#### Game Catalog
+### Add Ticket Types
 
-- **view_game_catalog**: Displays all games available for purchase. Filters out sold-out games if `max_licenses` is defined.
+```move
+add_ticket_type(
+    event,
+    name,
+    base_price,
+    benefits,
+    transferable,
+    resellable,
+    max_resell_price,
+    quantity,
+    valid_from,
+    valid_until,
+    ctx
+)
+```
 
-#### License Verification and Revenue Withdrawal
+### Purchase Tickets
 
-- **verify_license**: Allows for the verification of a user’s license by the license holder.
+```move
+purchase_ticket(
+    platform,
+    event,
+    ticket_type_name,
+    section_name,
+    promo_code,
+    payment,
+    ctx
+)
+```
 
-- **withdraw_revenue**: Enables the game publisher to withdraw accumulated revenue for a particular game.
+## Core Components
 
----
+### Platform
 
-### How to Use
+- Central registry for organizers
+- Fee collection and distribution
+- Platform-wide settings management
 
-1. **Initialize Platform**: Set up the platform with a fee percentage, enabling revenue collection for game sales.
+### Events
 
-2. **Create Store**: Owners create a store, which will manage the available games and promotional codes.
+- Customizable venue sections
+- Multiple ticket types
+- Promotional code support
+- Dynamic pricing rules
 
-3. **Add Games and Promo Codes**: Owners add games with prices and descriptions. Promo codes may be added to incentivize purchases.
+### Tickets
 
-4. **User Registration**: Users create accounts to track their purchases and manage licenses.
+- Unique QR codes
+- Transfer history tracking
+- Usage validation
+- Custom metadata support
 
-5. **Purchasing and Licensing**: Users purchase licenses, with promo codes if available. Platform fees are automatically deducted and transferred to the platform’s revenue.
+### Profiles
 
-6. **License Verification**: Purchased licenses can be verified by the owner and store, ensuring authenticity and preventing unauthorized transfers.
+- Organizer reputation system
+- Attendee loyalty program
+- Event attendance history
+- Customizable preferences
 
-### Key Features
+## Error Handling
 
-- **Decentralized Ownership**: Owners have full control over store creation, game additions, and revenue withdrawal.
-- **Promotional Code System**: Promo codes offer users discounts, which store owners can configure with usage limits and expiration.
-- **Revenue Collection and Fee Management**: Platform fees are automatically collected on each purchase, providing a steady revenue stream for the platform.
-- **License Verification**: Verifiable licenses increase transparency and trust, ensuring that only legitimate users access purchased content.
+The system includes comprehensive error handling for common scenarios:
 
-**Dependencies:**
+- `ENotOrganizer`: Unauthorized organizer access
+- `EEventNotFound`: Event doesn't exist
+- `ETicketNotFound`: Invalid ticket reference
+- `EInsufficientFunds`: Insufficient payment
+- `EEventSoldOut`: No tickets available
+- `ETicketExpired`: Ticket validity period ended
+- `EInvalidPromoCode`: Invalid or expired promo code
+- `ETicketAlreadyUsed`: Attempt to reuse ticket
+- `EInvalidTransfer`: Unauthorized ticket transfer
+- `EEventCancelled`: Event no longer active
+- `EInvalidRefund`: Refund validation failed
 
-- This module requires the `sui` and `candid` crates for Sui blockchain interaction and data serialization.
+## Security Features
 
-get more info at [dacade](https://dacade.org/communities/sui/challenges/19885730-fb83-477a-b95b-4ab265b61438/learning-modules/fc2e67a1-520d-4fae-a318-38414babc803)
+- Ownership validation for all operations
+- Secure ticket transfer mechanisms
+- Platform fee enforcement
+- Price manipulation prevention
+- Usage tracking and validation
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a new Pull Request
